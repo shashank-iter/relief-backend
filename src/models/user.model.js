@@ -4,10 +4,6 @@ import bcrypt from "bcrypt";
 
 const userSchema = new Schema(
   {
-    fullName: {
-      type: String,
-      required: true,
-    },
     email: {
       type: String,
       required: true,
@@ -28,6 +24,10 @@ const userSchema = new Schema(
       type: String,
       enum: ["user", "admin", "hospital"],
       default: "user",
+    },
+    profile: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PatientProfile",
     },
     refreshToken: {
       type: String,
