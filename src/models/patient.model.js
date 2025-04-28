@@ -15,13 +15,16 @@ const PatientProfileSchema = new Schema(
       type: String,
     },
     address: {
-      type: String,
+      locality: String,
+      city: String,
+      state: String,
+      pincode: String,
     },
-    pincode: {
-      type: String,
-    },
+    dob: { type: Date, required: true },
+    age: { type: Number }, // Can be auto-calculated via middleware if needed
     phoneNumber: {
       type: String,
+      unique: true,
     },
     bloodGroup: {
       type: String,
@@ -70,6 +73,19 @@ const PatientProfileSchema = new Schema(
     timestamps: true,
   }
 );
+
+PatientProfileSchema.pre('save', function (next) {
+  if (this.dob) {
+    const today = new Date();
+    let age = today.getFullYear() - this.dob.getFullYear();
+    const m = today.getMonth() - this.dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < this.dob.getDate())) {
+      age--;
+    }
+    this.age = age;
+  }
+  next();
+});
 
 // Create a geospatial index for location-based queries
 PatientProfileSchema.index({ location: "2dsphere" });
