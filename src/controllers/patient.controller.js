@@ -1,11 +1,11 @@
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
-import { PatientProfile } from "../models/patient.model.js";
-import { EmergencyContact } from "../models/emergencyContact.model.js";
-import { MedicalHistory } from "../models/medicalhistory.model.js";
-import { Disease } from "../models/disease.model.js";
-import { Allergy } from "../models/allergy.model.js";
-import { Injury } from "../models/injury.model.js";
+import { PatientProfile } from "../models/patient_models/patient.model.js";
+import { EmergencyContact } from "../models/patient_models/emergencyContact.model.js";
+import { MedicalHistory } from "../models/patient_models/medicalhistory.model.js";
+import { Disease } from "../models/patient_models/disease.model.js";
+import { Allergy } from "../models/patient_models/allergy.model.js";
+import { Injury } from "../models/patient_models/injury.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import ApiResponse from "../utils/ApiResponse.js";
 

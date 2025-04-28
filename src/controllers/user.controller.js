@@ -1,7 +1,7 @@
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
-import { PatientProfile } from "../models/patient.model.js";
+import { PatientProfile } from "../models/patient_models/patient.model.js";
 import ApiResponse from "../utils/ApiResponse.js";
 
 const generateAccessAndRefeshToken = async (userId) => {
@@ -122,18 +122,18 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 const loginUser = asyncHandler(async (req, res) => {
-  const { email, phoneNumber, role, password } = req.body;
-  if (!email && !phoneNumber) {
-    throw new ApiError(400, "Please provide username or password.");
+  const {  phoneNumber, role, password } = req.body;
+  if (!phoneNumber) {
+    throw new ApiError(400, "Please provide Phone number or password.");
   }
 
-  if (!role || role !== "user") {
+  if (!role || role !== "patient") {
     throw new ApiError(400, "Invalid role, Access Denied.");
   }
 
   // find the user
   const user = await User.findOne({
-    $or: [{ phoneNumber: phoneNumber }, { email: email }],
+    $or: [{ phoneNumber: phoneNumber }],
   });
 
   if (!user) {
