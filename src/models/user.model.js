@@ -4,13 +4,6 @@ import bcrypt from "bcrypt";
 
 const userSchema = new Schema(
   {
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
     phoneNumber: {
       type: String,
       required: true,
@@ -22,12 +15,8 @@ const userSchema = new Schema(
     },
     role: {
       type: String,
-      enum: ["user", "admin", "hospital"],
-      default: "user",
-    },
-    profile: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "PatientProfile",
+      enum: ["patient", "admin", "hospital"],
+      default: "patient",
     },
     refreshToken: {
       type: String,
@@ -98,5 +87,6 @@ userSchema.methods.generateRefreshToken = function () {
     }
   );
 };
+
 export const User = mongoose.model("User", userSchema);
 // this User can talk to the database and perform operations on the database
