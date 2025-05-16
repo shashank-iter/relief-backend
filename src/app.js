@@ -32,6 +32,10 @@ app.use(
 //routes declaration
 import userRouter from "./routes/user.routes.js";
 import patientsRouter from "./routes/patients.routes.js";
+import hospitalRouter from "./routes/hospital.routes.js";
+
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/users/patient", patientsRouter)
+app.use("/api/v1/users/hospital", hospitalRouter);
+
 export default app;
