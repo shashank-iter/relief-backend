@@ -5,7 +5,23 @@ import { PatientProfile } from "../models/patient_models/patient.model.js";
 import { HospitalProfile } from "../models/hospital_models/hospital.model.js";
 import ApiResponse from "../utils/ApiResponse.js";
 
-const generateAccessAndRefeshToken = async (userId) => {
+    const accessTokenOptions = {
+      httpOnly: true,
+      secure: true,
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    };
+
+    const refreshTokenOptions = {
+      httpOnly: true,
+      secure: true,
+      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+    };
+
+    const isLoginOptions = {
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    }
+
+export const generateAccessAndRefeshToken = async (userId) => {
   // the user Id in the params is mongoDB user id
 
   try {
@@ -89,22 +105,13 @@ const registerUser = asyncHandler(async (req, res) => {
 
     console.log("User registered successfully", createdUser);
 
-    const accessTokenOptions = {
-      httpOnly: true,
-      secure: true,
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
-    };
 
-    const refreshTokenOptions = {
-      httpOnly: true,
-      secure: true,
-      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
-    };
 
     return res
       .status(201)
       .cookie("accessToken", accessToken, accessTokenOptions)
       .cookie("refreshToken", refreshToken, refreshTokenOptions)
+      .cookie("is_login", 1, isLoginOptions)
       .json(
         new ApiResponse(
           201,
@@ -157,23 +164,13 @@ const loginUser = asyncHandler(async (req, res) => {
     "-refreshToken -password"
   );
 
-  const accessTokenOptions = {
-    httpOnly: true,
-    secure: true,
-    maxAge: 24 * 60 * 60 * 1000, // 1 day
-  };
-
-  const refreshTokenOptions = {
-    httpOnly: true,
-    secure: true,
-    maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
-  };
 
   // return response
   return res
     .status(200)
     .cookie("accessToken", accessToken, accessTokenOptions)
     .cookie("refreshToken", refreshToken, refreshTokenOptions)
+    .cookie("is_login", 1, isLoginOptions)
     .json(
       new ApiResponse(
         200,
