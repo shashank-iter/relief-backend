@@ -1,0 +1,14 @@
+version: "1"
+services:
+  # a web service on the Node.js runtime
+  - type: web
+    runtime: node
+    name: relief-backend
+    repo: https://github.com/shashank-iter/relief-backend # Default: Repo containing render.yaml
+    autoDeploy: true
+    autoDeployTrigger: commit
+    branch: master
+    buildCommand: npm install
+    startCommand: node src/index.js
+    plan: free
+
