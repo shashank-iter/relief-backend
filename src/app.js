@@ -33,9 +33,11 @@ app.use(
 import userRouter from "./routes/user.routes.js";
 import patientsRouter from "./routes/patients.routes.js";
 import hospitalRouter from "./routes/hospital.routes.js";
+import emerygencyRouter from "./routes/emergency.routes.js"
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/users/patient", patientsRouter)
 app.use("/api/v1/users/hospital", hospitalRouter);
+app.use("/api/v1/emergency", emerygencyRouter);
 
 export default app;
