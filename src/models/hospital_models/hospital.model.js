@@ -52,6 +52,7 @@ const hospitalProfileSchema = new mongoose.Schema(
       required: false,
     },
     is_blood_available: { type: Boolean, default: false },
+    is_ambulance_available: { type: Boolean, default: false },
   },
   {
     timestamps: true,
@@ -59,7 +60,6 @@ const hospitalProfileSchema = new mongoose.Schema(
 );
 
 hospitalProfileSchema.index({ location: "2dsphere" });
-
 
 export const HospitalProfile = mongoose.model(
   "HospitalProfile",
