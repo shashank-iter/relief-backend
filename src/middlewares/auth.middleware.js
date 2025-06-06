@@ -5,17 +5,26 @@ import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
 import { generateAccessAndRefeshToken } from "../controllers/user.controller.js";
 
-const accessTokenOptions = {
-  httpOnly: true,
-  secure: true,
-  maxAge: 24 * 60 * 60 * 1000, // 1 day
-};
+    const accessTokenOptions = {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    };
 
-const refreshTokenOptions = {
-  httpOnly: true,
-  secure: true,
-  maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
-};
+    const refreshTokenOptions = {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+    };
+
+    const isLoginOptions = {
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      secure: true,
+      httpOnly: false,
+      sameSite: "None",
+    }
 
 export const verifyJWT = (roles) =>
   asyncHandler(async (req, res, next) => {
@@ -66,6 +75,8 @@ export const verifyJWT = (roles) =>
           res.cookie("accessToken", newAccessToken, accessTokenOptions);
 
           res.cookie("refreshToken", newRefreshToken, refreshTokenOptions);
+
+          res.cookie("is_login", 1, isLoginOptions);
 
           //  Attach user and proceed
           req.user = await User.findById(user._id).select(
