@@ -8,14 +8,14 @@ import ApiResponse from "../utils/ApiResponse.js";
     const accessTokenOptions = {
       httpOnly: true,
       secure: true,
-      SameSite: 'None',
+      sameSite: "None",
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     };
 
     const refreshTokenOptions = {
       httpOnly: true,
       secure: true,
-      SameSite: 'None',
+      sameSite: "None",
       maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
     };
 
@@ -23,6 +23,7 @@ import ApiResponse from "../utils/ApiResponse.js";
       maxAge: 24 * 60 * 60 * 1000, // 1 day
       secure: false,
       httpOnly: false,
+      sameSite: "None",
     }
 
 export const generateAccessAndRefeshToken = async (userId) => {
