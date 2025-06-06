@@ -5,17 +5,18 @@ import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
 import { generateAccessAndRefeshToken } from "../controllers/user.controller.js";
 
-const accessTokenOptions = {
-  httpOnly: true,
-  secure: true,
-  maxAge: 24 * 60 * 60 * 1000, // 1 day
-};
+    const accessTokenOptions = {
+      httpOnly: true,
+      secure: true,
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    };
 
-const refreshTokenOptions = {
-  httpOnly: true,
-  secure: true,
-  maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
-};
+    const refreshTokenOptions = {
+      httpOnly: true,
+      secure: true,
+      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+    };
+
 
 export const verifyJWT = (roles) =>
   asyncHandler(async (req, res, next) => {
@@ -31,9 +32,7 @@ export const verifyJWT = (roles) =>
 
     try {
       const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
-      const user = await User.findById(decoded._id).select(
-        "-password -refreshToken"
-      );
+      const user = await User.findById(decoded._id).select("-password -refreshToken");
 
       if (!user) throw new ApiError(401, "Invalid Access Token");
       if (!roles.includes(user.role)) throw new ApiError(403, "Access Denied");
@@ -41,17 +40,9 @@ export const verifyJWT = (roles) =>
       req.user = user;
       return next();
     } catch (err) {
-      // If it's already an ApiError (like your 403), don't override it
-      if (err instanceof ApiError) {
-        return next(err);
-      }
-
       if (err.name === "TokenExpiredError" && refreshToken) {
         try {
-          const decodedRefresh = jwt.verify(
-            refreshToken,
-            process.env.REFRESH_TOKEN_SECRET
-          );
+          const decodedRefresh = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
           const user = await User.findById(decodedRefresh._id);
 
           if (!user || user.refreshToken !== refreshToken) {
@@ -68,9 +59,7 @@ export const verifyJWT = (roles) =>
           res.cookie("refreshToken", newRefreshToken, refreshTokenOptions);
 
           //  Attach user and proceed
-          req.user = await User.findById(user._id).select(
-            "-password -refreshToken"
-          );
+          req.user = await User.findById(user._id).select("-password -refreshToken");
           return next();
         } catch (refreshErr) {
           return next(new ApiError(401, "Refresh Token Expired or Invalid"));
@@ -80,3 +69,4 @@ export const verifyJWT = (roles) =>
       return next(new ApiError(401, "Invalid Access Token"));
     }
   });
+

@@ -21,11 +21,6 @@ const userSchema = new Schema(
     refreshToken: {
       type: String,
     },
-    status: {
-      type: String,
-      enum: ["active", "blocked"], // to be used to block user in case of any false inputs.
-      default: "active",
-    },
   },
   {
     timestamps: true,

@@ -8,14 +8,12 @@ import ApiResponse from "../utils/ApiResponse.js";
     const accessTokenOptions = {
       httpOnly: true,
       secure: true,
-      sameSite: 'None',
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     };
 
     const refreshTokenOptions = {
       httpOnly: true,
       secure: true,
-      sameSite: 'None',
       maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
     };
 
