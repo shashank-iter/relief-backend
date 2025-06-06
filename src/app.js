@@ -24,7 +24,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: [process.env.CORS_ORIGIN],
+    origin: ["http://localhost:3000", "https://relief-patient.vercel.app/"],
     credentials: true,
   })
 );
