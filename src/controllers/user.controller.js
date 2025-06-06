@@ -21,6 +21,8 @@ import ApiResponse from "../utils/ApiResponse.js";
 
     const isLoginOptions = {
       maxAge: 24 * 60 * 60 * 1000, // 1 day
+      secure: false,
+      httpOnly: false,
     }
 
 export const generateAccessAndRefeshToken = async (userId) => {
