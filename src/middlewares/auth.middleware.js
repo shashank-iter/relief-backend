@@ -24,6 +24,7 @@ import { generateAccessAndRefeshToken } from "../controllers/user.controller.js"
       secure: true,
       httpOnly: false,
       sameSite: "None",
+      domain: '.vercel.app'
     }
 
 export const verifyJWT = (roles) =>
