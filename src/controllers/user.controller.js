@@ -24,7 +24,6 @@ import ApiResponse from "../utils/ApiResponse.js";
       secure: true,
       httpOnly: false,
       sameSite: "None",
-      domain: '.vercel.app'
     }
 
 export const generateAccessAndRefeshToken = async (userId) => {
