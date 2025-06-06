@@ -1,4 +1,4 @@
-import EmergencyRequest from "../models/emergency_requests_models/emergencyRequest.model.js";
+import EmergencyRequest from "../models/emergency_requests_models/emergencyrequest.model.js";
 import { HospitalProfile } from "../models/hospital_models/hospital.model.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
