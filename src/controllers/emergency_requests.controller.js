@@ -130,9 +130,15 @@ const getHospitalResponsesForPatient = asyncHandler(async (req, res) => {
   const emergencyRequest = await EmergencyRequest.findOne({
     createdBy: patientId,
     status: { $in: ["pending", "accepted"] },
-  }).populate("acceptedBy", "-__v");
-
-  console.log(emergencyRequest);
+  }).populate({
+    path: "acceptedBy",
+    select: "-__v",
+    populate: [
+      { path: "bedData", select: "-__v" },
+      { path: "bloodData", select: "-__v" },
+      { path: "address", select: "-__v" }
+    ]
+  });
 
   if (!emergencyRequest) {
     throw new ApiError(404, "No active emergency request found for patient");
@@ -145,6 +151,7 @@ const getHospitalResponsesForPatient = asyncHandler(async (req, res) => {
     })
   );
 });
+
 
 const getEmergencyRequestsByStatusForPatient = asyncHandler(async (req, res) => {
   const userId = req.user.id;
