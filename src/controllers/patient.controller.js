@@ -17,6 +17,7 @@ import ApiResponse from "../utils/ApiResponse.js";
 const updatePatientProfile = asyncHandler(async (req, res) => {
   const {
     name,
+    dob, 
     address,
     pincode,
     phoneNumber,
@@ -37,6 +38,7 @@ const updatePatientProfile = asyncHandler(async (req, res) => {
 
   // Update only the fields that were provided
   if (name) patientProfile.name = name;
+  if (dob) patientProfile.dob = dob;
   if (address) patientProfile.address = address;
   if (pincode) patientProfile.pincode = pincode;
   if (phoneNumber) patientProfile.phoneNumber = phoneNumber;
