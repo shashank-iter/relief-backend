@@ -324,38 +324,30 @@ const getEmergencyRequestsByStatusForHospital = asyncHandler(async (req, res) =>
   );
 });
 
- const uploadEmergencyRequestPhoto = asyncHandler(async (req, res) => {
+const uploadEmergencyRequestPhoto = asyncHandler(async (req, res) => {
   const { emergencyRequestId } = req.body;
+  console.log(req)
 
-  if (!emergencyRequestId) {
-    throw new ApiError(400, "Emergency Request ID is required");
+  if (!req.file || !emergencyRequestId) {
+    throw new ApiError(400, "Image file and requestId are required");
   }
 
-  const emergencyRequest = await EmergencyRequest.findById(emergencyRequestId);
-  if (!emergencyRequest) {
+  const request = await EmergencyRequest.findById(emergencyRequestId);
+  if (!request) {
     throw new ApiError(404, "Emergency request not found");
   }
 
-  if (!req.file || !req.file.path) {
-    throw new ApiError(400, "Image file is required");
+  const cloudinaryResult = await uploadOnCloudinary(req.file.buffer);
+  if (!cloudinaryResult || !cloudinaryResult.secure_url) {
+    throw new ApiError(500, "Cloudinary upload failed");
   }
 
-  console.log("file", req.file);
+  request.photo = cloudinaryResult.secure_url;
+  await request.save();
 
-  const cloudinaryResult = await uploadOnCloudinary(req.file.path);
-
-  if (!cloudinaryResult?.url) {
-    throw new ApiError(500, "Image upload failed");
-  }
-
-  emergencyRequest.photo = cloudinaryResult.secure_url;
-  await emergencyRequest.save();
-
-  return res.status(200).json(
-    new ApiResponse(200, "Photo updated successfully", {
-      photo: emergencyRequest.photo,
-    })
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Photo uploaded successfully", request));
 });
 
 

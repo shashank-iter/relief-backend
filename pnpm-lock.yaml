@@ -41,6 +41,9 @@ dependencies:
   prettier:
     specifier: ^3.5.2
     version: 3.5.2
+  streamifier:
+    specifier: ^0.1.1
+    version: 0.1.1
 
 packages:
 
@@ -1279,6 +1282,11 @@ packages:
   /statuses@2.0.1:
     resolution: {integrity: sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ==}
     engines: {node: '>= 0.8'}
+    dev: false
+
+  /streamifier@0.1.1:
+    resolution: {integrity: sha512-zDgl+muIlWzXNsXeyUfOk9dChMjlpkq0DRsxujtYPgyJ676yQ8jEm6zzaaWHFDg5BNcLuif0eD2MTyJdZqXpdg==}
+    engines: {node: '>=0.10'}
     dev: false
 
   /streamsearch@1.1.0:
