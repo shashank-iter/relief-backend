@@ -3,6 +3,7 @@ import { HospitalProfile } from "../models/hospital_models/hospital.model.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import mongoose from "mongoose";
 
 
@@ -323,6 +324,40 @@ const getEmergencyRequestsByStatusForHospital = asyncHandler(async (req, res) =>
   );
 });
 
+ const uploadEmergencyRequestPhoto = asyncHandler(async (req, res) => {
+  const { emergencyRequestId } = req.body;
+
+  if (!emergencyRequestId) {
+    throw new ApiError(400, "Emergency Request ID is required");
+  }
+
+  const emergencyRequest = await EmergencyRequest.findById(emergencyRequestId);
+  if (!emergencyRequest) {
+    throw new ApiError(404, "Emergency request not found");
+  }
+
+  if (!req.file || !req.file.path) {
+    throw new ApiError(400, "Image file is required");
+  }
+
+  console.log("file", req.file);
+
+  const cloudinaryResult = await uploadOnCloudinary(req.file.path);
+
+  if (!cloudinaryResult?.url) {
+    throw new ApiError(500, "Image upload failed");
+  }
+
+  emergencyRequest.photo = cloudinaryResult.secure_url;
+  await emergencyRequest.save();
+
+  return res.status(200).json(
+    new ApiResponse(200, "Photo updated successfully", {
+      photo: emergencyRequest.photo,
+    })
+  );
+});
+
 
 
 
@@ -348,4 +383,5 @@ export {
   getNearbyEmergencyRequestsForHospital,
   getEmergencyRequestsByStatusForHospital,
   getEmergencyRequestsByStatusForPatient,
+  uploadEmergencyRequestPhoto,
 };
