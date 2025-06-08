@@ -22,7 +22,7 @@ router.route("/patient/get_emergency_requests_by_status").get(verifyJWT(["patien
 // For Hospitals
 router.route("/hospital/accept_emergency_request/:id").post(verifyJWT(["hospital", "admin"]), hospitalAcceptEmergencyRequest)
 router.route("/hospital/get_nearby_emergency_requests").get(verifyJWT(["hospital", "admin"]), getNearbyEmergencyRequestsForHospital)
-router.route("/hospital/get_emergency_requests_by_status").get(verifyJWT(["hospital", "admin"]), getEmergencyRequestsByStatusForHospital)
+router.route("/hospital/get_emergency_requests_by_status").post(verifyJWT(["hospital", "admin"]), getEmergencyRequestsByStatusForHospital)
 
 
 export default router;
