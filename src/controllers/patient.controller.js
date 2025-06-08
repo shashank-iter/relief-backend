@@ -17,7 +17,7 @@ import ApiResponse from "../utils/ApiResponse.js";
 const updatePatientProfile = asyncHandler(async (req, res) => {
   const {
     name,
-    dob, 
+    dob,
     address,
     pincode,
     phoneNumber,
@@ -378,11 +378,14 @@ const deleteEmergencyContact = asyncHandler(async (req, res) => {
 
   // Find the contact
   const contact = await EmergencyContact.findById(contactId);
+  console.log(contact);
 
   if (!contact) {
     throw new ApiError(404, "Emergency contact not found");
   }
-
+  console.log(contact.owner.toString());
+  console.log(userId.toString());
+  console.log(contact.owner.toString() !== userId.toString());
   // Verify ownership
   if (contact.owner.toString() !== userId.toString()) {
     throw new ApiError(403, "You don't have permission to delete this contact");
