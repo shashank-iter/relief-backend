@@ -11,6 +11,7 @@ import {
   getEmergencyRequestsByStatusForPatient,
   uploadEmergencyRequestPhoto,
   cancelEmergencyRequest,
+  markRequestAsResolved
 } from "../controllers/emergency_requests.controller.js";
 const router = Router();
 
@@ -28,6 +29,7 @@ router.route("/patient/cancel_emergency_request/:id").post(verifyJWT(["patient",
 router.route("/hospital/accept_emergency_request/:id").post(verifyJWT(["hospital", "admin"]), hospitalAcceptEmergencyRequest)
 router.route("/hospital/get_nearby_emergency_requests").get(verifyJWT(["hospital", "admin"]), getNearbyEmergencyRequestsForHospital)
 router.route("/hospital/get_emergency_requests_by_status").post(verifyJWT(["hospital", "admin"]), getEmergencyRequestsByStatusForHospital)
+router.route("/hospital/mark_resolved/:id").post(verifyJWT(["hospital", "admin"]), markRequestAsResolved)
 
 
 export default router;

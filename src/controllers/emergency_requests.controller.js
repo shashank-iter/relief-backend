@@ -165,7 +165,6 @@ const getHospitalResponsesForPatient = asyncHandler(async (req, res) => {
   );
 });
 
-
 const getEmergencyRequestsByStatusForPatient = asyncHandler(
   async (req, res) => {
     const userId = req.user.id;
@@ -434,6 +433,50 @@ const cancelEmergencyRequest = asyncHandler(async (req, res) => {
     );
 });
 
+const markRequestAsResolved = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const requestId  = req.params.id;
+  console.log("req", req.params);
+
+  // Find the hospital profile linked to the user
+  const hospitalProfile = await HospitalProfile.findOne({ owner: userId });
+
+  // console.log(hospitalProfile);
+  console.log(userId, requestId);
+
+  if (!hospitalProfile) {
+    throw new ApiError(404, "Hospital profile not found");
+  }
+
+  const hospitalProfileId = hospitalProfile._id;
+
+  // Find and update the request only if it was finalized by this hospital
+  const request = await EmergencyRequest.findOneAndUpdate(
+    {
+      _id: requestId,
+      status: "finalized",
+      finalizedHospital: hospitalProfileId,
+    },
+    { status: "resolved" },
+    { new: true }
+  );
+
+  console.log(request);
+
+  if (!request) {
+    throw new ApiError(
+      404,
+      "No matching finalized request found for this hospital"
+    );
+  }
+
+  return res.status(200).json(
+    new ApiResponse(200, "Emergency request marked as resolved successfully", {
+      request,
+    })
+  );
+});
+
 // how we are going to handle when a user creates multiple emergency requests
 // may not allow user to create multiple emergency requests as in not more than 2 at one time.
 
@@ -457,4 +500,5 @@ export {
   getEmergencyRequestsByStatusForPatient,
   uploadEmergencyRequestPhoto,
   cancelEmergencyRequest,
+  markRequestAsResolved,
 };
