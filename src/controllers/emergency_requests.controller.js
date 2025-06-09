@@ -137,7 +137,7 @@ const getHospitalResponsesForPatient = asyncHandler(async (req, res) => {
   // Find the latest active emergency request for this patient
   const emergencyRequest = await EmergencyRequest.findOne({
     createdBy: patientId,
-    status: { $in: ["pending", "accepted"] },
+    status: { $in: ["pending", "accepted", "finalized"] },
   }).populate({
     path: "acceptedBy",
     select: "-__v",
