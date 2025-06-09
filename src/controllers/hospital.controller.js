@@ -2,6 +2,7 @@ import { HospitalProfile } from "../models/hospital_models/hospital.model.js";
 import { Address } from "../models/hospital_models/address.model.js";
 import { BedData } from "../models/hospital_models/beddata.model.js";
 import { BloodData } from "../models/hospital_models/blooddata.model.js";
+import EmergencyRequest from "../models/emergency_requests_models/emergencyrequest.model.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
@@ -85,7 +86,11 @@ const updateHospitalProfile = asyncHandler(async (req, res) => {
         // Update existing bedData doc
         const updatedBed = await BedData.findOneAndUpdate(
           { _id: bedItem._id, owner: hospitalProfile._id },
-          { type: bedItem.type, count: bedItem.count, available: bedItem.available },
+          {
+            type: bedItem.type,
+            count: bedItem.count,
+            available: bedItem.available,
+          },
           { new: true }
         );
         if (updatedBed) {
@@ -106,7 +111,10 @@ const updateHospitalProfile = asyncHandler(async (req, res) => {
       (id) => !updatedBedDataIds.includes(id.toString())
     );
     if (bedDataIdsToRemove.length) {
-      await BedData.deleteMany({ _id: { $in: bedDataIdsToRemove }, owner: hospitalProfile._id });
+      await BedData.deleteMany({
+        _id: { $in: bedDataIdsToRemove },
+        owner: hospitalProfile._id,
+      });
     }
 
     hospitalProfile.bedData = updatedBedDataIds;
@@ -116,34 +124,87 @@ const updateHospitalProfile = asyncHandler(async (req, res) => {
   await hospitalProfile.save();
 
   // Populate referenced fields before sending response
-  const populatedHospitalProfile = await HospitalProfile.findOne({ owner: userId }).populate([
-  "address",
-  "bedData",
-  "bloodData",
-]);
+  const populatedHospitalProfile = await HospitalProfile.findOne({
+    owner: userId,
+  }).populate(["address", "bedData", "bloodData"]);
 
-  res.status(200).json(
-    new ApiResponse(200,  "Hospital profile updated successfully", populatedHospitalProfile)
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        "Hospital profile updated successfully",
+        populatedHospitalProfile
+      )
+    );
 });
-
 
 const getHospitalProfile = asyncHandler(async (req, res) => {
   const userId = req.user.id;
 
-  const hospitalProfile = await HospitalProfile.findOne({ owner: userId }).populate([
-    "address",
-    "bedData",
-    "bloodData",
-  ]);
+  const hospitalProfile = await HospitalProfile.findOne({
+    owner: userId,
+  }).populate(["address", "bedData", "bloodData"]);
 
   if (!hospitalProfile) {
     throw new ApiError(404, "Hospital profile not found");
   }
 
-  res.status(200).json(
-    new ApiResponse(200, "Hospital profile fetched successfully", hospitalProfile)
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        "Hospital profile fetched successfully",
+        hospitalProfile
+      )
+    );
+});
+
+const getHospitalDashboardStats = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+
+  // Fetch the hospital profile of the logged-in user
+  const hospitalProfile = await HospitalProfile.findOne({ owner: userId });
+  if (!hospitalProfile) {
+    throw new ApiError(404, "Hospital profile not found");
+  }
+
+  const hospitalProfileId = hospitalProfile._id;
+
+  // 1. Total beds available
+  const bedStats = await BedData.aggregate([
+    { $match: { owner: hospitalProfileId } },
+    {
+      $group: {
+        _id: null,
+        totalAvailableBeds: { $sum: "$available" },
+      },
+    },
+  ]);
+  // console.log(bedStats);
+
+  const totalAvailableBeds = bedStats[0]?.totalAvailableBeds || 0;
+
+  // 2. Total finalized requests accepted by this hospital
+  const finalizedRequestsCount = await EmergencyRequest.countDocuments({
+    status: "finalized",
+    acceptedBy: hospitalProfileId,
+  });
+
+  // 3. Total resolved requests accepted by this hospital
+  const resolvedRequestsCount = await EmergencyRequest.countDocuments({
+    status: "resolved",
+    acceptedBy: hospitalProfileId,
+  });
+
+  return res.status(200).json(
+    new ApiResponse(200, "Hospital dashboard stats fetched successfully", {
+      totalAvailableBeds,
+      finalizedRequestsCount,
+      resolvedRequestsCount,
+    })
   );
 });
 
-export { updateHospitalProfile, getHospitalProfile };
+export { updateHospitalProfile, getHospitalProfile, getHospitalDashboardStats };
