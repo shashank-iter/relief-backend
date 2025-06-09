@@ -131,19 +131,11 @@ const patientFinalizeEmergencyRequest = asyncHandler(async (req, res) => {
   emergencyRequest.status = "finalized";
   await emergencyRequest.save();
 
- const populatedRequest = await EmergencyRequest.findById(emergencyRequest._id)
-  .populate({
-    path: "patientProfile",
-    select: "-__v",
-    populate: [
-      { path: "medicalHistory", select: "-__v" },
-      { path: "emergencyContacts", select: "-__v" },
-    ],
-  });
-
-  res.status(200).json(
-    new ApiResponse(200, "Hospital finalized successfully", populatedRequest)
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, "Hospital finalized successfully", emergencyRequest)
+    );
 });
 
 const getHospitalResponsesForPatient = asyncHandler(async (req, res) => {
@@ -350,7 +342,7 @@ const getEmergencyRequestsByStatusForHospital = asyncHandler(
     const { status } = req.body;
 
     const validStatuses = [
-      // "pending", this API is not for pending status 
+      // "pending", this API is not for pending status
       "accepted",
       "finalized",
       "resolved",
@@ -372,7 +364,16 @@ const getEmergencyRequestsByStatusForHospital = asyncHandler(
       requests = await EmergencyRequest.find({
         status,
         finalizedHospital: hospital._id,
-      }).sort({ updatedAt: -1 });
+      })
+        .populate({
+          path: "patientProfile",
+          select: "-__v",
+          populate: [
+            { path: "medicalHistory", select: "-__v" },
+            { path: "emergencyContacts", select: "-__v" },
+          ],
+        })
+        .sort({ updatedAt: -1 });
     } else {
       // get requests that were accepted by hospital
       requests = await EmergencyRequest.find({
