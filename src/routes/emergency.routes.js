@@ -18,7 +18,7 @@ const router = Router();
 
 //for Patients
 router.route("/patient/create_emergency_request").post(verifyJWT(["patient", "admin"]), createEmergencyRequest)
-router.route("/patient/get_hospital_responses").get(verifyJWT(["patient", "admin"]), getHospitalResponsesForPatient)
+router.route("/patient/get_hospital_responses/:id").get(verifyJWT(["patient", "admin"]), getHospitalResponsesForPatient)
 router.route("/patient/finalize_emergency_request/:id").post(verifyJWT(["patient", "admin"]), patientFinalizeEmergencyRequest)
 router.route("/patient/get_emergency_requests_by_status").post(verifyJWT(["patient", "admin"]), getEmergencyRequestsByStatusForPatient)
 router.route("/patient/upload_emergency_request_photo").post(verifyJWT(["patient", "admin"]),upload.single("file"),uploadEmergencyRequestPhoto)
