@@ -369,7 +369,15 @@ const getEmergencyRequestsByStatusForHospital = asyncHandler(
           path: "patientProfile",
           select: "-__v",
           populate: [
-            { path: "medicalHistory", select: "-__v" },
+            {
+              path: "medicalHistory",
+              select: "-__v",
+              populate: [
+                { path: "allergies", select: "-__v" },
+                { path: "diseases", select: "-__v" },
+                { path: "injuries", select: "-__v" },
+              ],
+            },
             { path: "emergencyContacts", select: "-__v" },
           ],
         })
