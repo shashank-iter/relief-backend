@@ -131,8 +131,15 @@ const patientFinalizeEmergencyRequest = asyncHandler(async (req, res) => {
   emergencyRequest.status = "finalized";
   await emergencyRequest.save();
 
-  const populatedRequest = await EmergencyRequest.findById(emergencyRequest._id)
-    .populate("patientProfile", "-__v");
+ const populatedRequest = await EmergencyRequest.findById(emergencyRequest._id)
+  .populate({
+    path: "patientProfile",
+    select: "-__v",
+    populate: [
+      { path: "medicalHistory", select: "-__v" },
+      { path: "emergencyContacts", select: "-__v" },
+    ],
+  });
 
   res.status(200).json(
     new ApiResponse(200, "Hospital finalized successfully", populatedRequest)
