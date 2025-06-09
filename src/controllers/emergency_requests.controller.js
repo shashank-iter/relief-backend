@@ -335,7 +335,7 @@ const getEmergencyRequestsByStatusForHospital = asyncHandler(
     const { status } = req.body;
 
     const validStatuses = [
-      "pending",
+      // "pending", this API is not for pending status 
       "accepted",
       "finalized",
       "resolved",
@@ -350,10 +350,21 @@ const getEmergencyRequestsByStatusForHospital = asyncHandler(
       throw new ApiError(404, "Hospital profile not found");
     }
 
-    const requests = await EmergencyRequest.find({
-      status,
-      acceptedBy: hospital._id,
-    }).sort({ updatedAt: -1 });
+    let requests;
+
+    // get requests that hospital were finalized to hospital
+    if (status === "finalized" || status === "resolved") {
+      requests = await EmergencyRequest.find({
+        status,
+        finalizedHospital: hospital._id,
+      }).sort({ updatedAt: -1 });
+    } else {
+      // get requests that were accepted by hospital
+      requests = await EmergencyRequest.find({
+        status,
+        acceptedBy: hospital._id,
+      }).sort({ updatedAt: -1 });
+    }
 
     res
       .status(200)
@@ -435,7 +446,7 @@ const cancelEmergencyRequest = asyncHandler(async (req, res) => {
 
 const markRequestAsResolved = asyncHandler(async (req, res) => {
   const userId = req.user.id;
-  const requestId  = req.params.id;
+  const requestId = req.params.id;
   console.log("req", req.params);
 
   // Find the hospital profile linked to the user
