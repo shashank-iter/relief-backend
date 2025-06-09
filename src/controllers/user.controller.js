@@ -5,26 +5,26 @@ import { PatientProfile } from "../models/patient_models/patient.model.js";
 import { HospitalProfile } from "../models/hospital_models/hospital.model.js";
 import ApiResponse from "../utils/ApiResponse.js";
 
-    const accessTokenOptions = {
-      httpOnly: true,
-      secure: true,
-      sameSite: "None",
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
-    };
+const accessTokenOptions = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "None",
+  maxAge: 24 * 60 * 60 * 1000, // 1 day
+};
 
-    const refreshTokenOptions = {
-      httpOnly: true,
-      secure: true,
-      sameSite: "None",
-      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
-    };
+const refreshTokenOptions = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "None",
+  maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+};
 
-    const isLoginOptions = {
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
-      secure: true,
-      httpOnly: false,
-      sameSite: "None",
-    }
+const isLoginOptions = {
+  maxAge: 24 * 60 * 60 * 1000, // 1 day
+  secure: true,
+  httpOnly: false,
+  sameSite: "None",
+};
 
 export const generateAccessAndRefeshToken = async (userId) => {
   // the user Id in the params is mongoDB user id
@@ -110,23 +110,17 @@ const registerUser = asyncHandler(async (req, res) => {
 
     console.log("User registered successfully", createdUser);
 
-
-
     return res
       .status(201)
       .cookie("accessToken", accessToken, accessTokenOptions)
       .cookie("refreshToken", refreshToken, refreshTokenOptions)
       .cookie("is_login", 1, isLoginOptions)
       .json(
-        new ApiResponse(
-          201,
-          "User registered successfully",
-          {
-            user: createdUser,
-            accessToken,
-            refreshToken,
-          },
-        )
+        new ApiResponse(201, "User registered successfully", {
+          user: createdUser,
+          accessToken,
+          refreshToken,
+        })
       );
   } catch (error) {
     console.log("User registration error:", error);
@@ -135,7 +129,7 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 const loginUser = asyncHandler(async (req, res) => {
-  const {  phoneNumber, role, password } = req.body;
+  const { phoneNumber, role, password } = req.body;
   if (!phoneNumber) {
     throw new ApiError(400, "Please provide Phone number or password.");
   }
@@ -168,7 +162,6 @@ const loginUser = asyncHandler(async (req, res) => {
   const loggedInUser = await User.findById(user._id).select(
     "-refreshToken -password"
   );
-
 
   // return response
   return res
@@ -204,7 +197,7 @@ const getUserData = asyncHandler(async (req, res) => {
 
 // For Hospital User
 
-// integrated supabase data and then register from admin dashboard. 
+// integrated supabase data and then register from admin dashboard.
 
 // register controller for hospital
 const registerHospitalUser = asyncHandler(async (req, res) => {
@@ -213,7 +206,11 @@ const registerHospitalUser = asyncHandler(async (req, res) => {
   console.log(password, phoneNumber, role, name, licenseNumber, type);
 
   // Validate required fields
-  if ([password, phoneNumber, role, name, licenseNumber, type].some(field => !field?.trim())) {
+  if (
+    [password, phoneNumber, role, name, licenseNumber, type].some(
+      (field) => !field?.trim()
+    )
+  ) {
     throw new ApiError(400, "Please provide all required fields");
   }
 
@@ -256,9 +253,13 @@ const registerHospitalUser = asyncHandler(async (req, res) => {
     await newUser.save();
 
     // Generate tokens
-    const { accessToken, refreshToken } = await generateAccessAndRefeshToken(newUser._id);
+    const { accessToken, refreshToken } = await generateAccessAndRefeshToken(
+      newUser._id
+    );
 
-    const createdUser = await User.findById(newUser._id).select("-password -refreshToken");
+    const createdUser = await User.findById(newUser._id).select(
+      "-password -refreshToken"
+    );
 
     if (!createdUser) {
       throw new ApiError(500, "Something went wrong while creating user");
@@ -283,15 +284,11 @@ const registerHospitalUser = asyncHandler(async (req, res) => {
       .cookie("accessToken", accessToken, accessTokenOptions)
       .cookie("refreshToken", refreshToken, refreshTokenOptions)
       .json(
-        new ApiResponse(
-          201,
-          "Hospital registered successfully",
-          {
-            user: createdUser,
-            accessToken,
-            refreshToken,
-          },
-        )
+        new ApiResponse(201, "Hospital registered successfully", {
+          user: createdUser,
+          accessToken,
+          refreshToken,
+        })
       );
   } catch (error) {
     console.log("Hospital registration error:", error);
@@ -331,19 +328,25 @@ const loginHospitalUser = asyncHandler(async (req, res) => {
   }
 
   // send access and refresh token in cookies
-  const { accessToken, refreshToken } = await generateAccessAndRefeshToken(user._id);
+  const { accessToken, refreshToken } = await generateAccessAndRefeshToken(
+    user._id
+  );
 
-  const loggedInUser = await User.findById(user._id).select("-refreshToken -password");
+  const loggedInUser = await User.findById(user._id).select(
+    "-refreshToken -password"
+  );
 
   const accessTokenOptions = {
     httpOnly: true,
     secure: true,
+    sameSite: "None",
     maxAge: 24 * 60 * 60 * 1000, // 1 day
   };
 
   const refreshTokenOptions = {
     httpOnly: true,
     secure: true,
+    sameSite: "None",
     maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
   };
 
@@ -352,18 +355,18 @@ const loginHospitalUser = asyncHandler(async (req, res) => {
     .cookie("accessToken", accessToken, accessTokenOptions)
     .cookie("refreshToken", refreshToken, refreshTokenOptions)
     .json(
-      new ApiResponse(
-        200,
-        "Hospital user logged in successfully",
-        {
-          user: loggedInUser,
-          accessToken,
-          refreshToken,
-        }
-      )
+      new ApiResponse(200, "Hospital user logged in successfully", {
+        user: loggedInUser,
+        accessToken,
+        refreshToken,
+      })
     );
 });
 
-
-
-export { registerUser, loginUser, getUserData, registerHospitalUser, loginHospitalUser };
+export {
+  registerUser,
+  loginUser,
+  getUserData,
+  registerHospitalUser,
+  loginHospitalUser,
+};
