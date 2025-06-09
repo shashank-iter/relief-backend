@@ -62,7 +62,12 @@ const emergencyRequestSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-
+    
+    patientProfile: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PatientProfile",
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -72,6 +77,9 @@ const emergencyRequestSchema = new mongoose.Schema(
 // Enable geospatial queries
 emergencyRequestSchema.index({ location: "2dsphere" });
 
-const EmergencyRequest = mongoose.model("EmergencyRequest", emergencyRequestSchema);
+const EmergencyRequest = mongoose.model(
+  "EmergencyRequest",
+  emergencyRequestSchema
+);
 
 export default EmergencyRequest;

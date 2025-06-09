@@ -99,7 +99,6 @@ const patientFinalizeEmergencyRequest = asyncHandler(async (req, res) => {
   }
 
   const emergencyRequest = await EmergencyRequest.findById(requestId);
-
   if (!emergencyRequest) {
     throw new ApiError(404, "Emergency request not found");
   }
@@ -118,17 +117,25 @@ const patientFinalizeEmergencyRequest = asyncHandler(async (req, res) => {
 
   const hospital = await HospitalProfile.findById(hospitalId);
   if (!hospital) {
-    throw new Error("Hospital not found");
+    throw new ApiError(404, "Hospital not found");
   }
-  emergencyRequest.finalizedHospital = hospital;
+
+  const patientProfile = await PatientProfile.findOne({ owner: userId });
+  if (!patientProfile) {
+    throw new ApiError(404, "Patient profile not found");
+  }
+
+  emergencyRequest.finalizedHospital = hospital._id;
+  emergencyRequest.patientProfile = patientProfile._id;
   emergencyRequest.status = "finalized";
   await emergencyRequest.save();
 
-  res
-    .status(200)
-    .json(
-      new ApiResponse(200, "Hospital finalized successfully", emergencyRequest)
-    );
+  const populatedRequest = await EmergencyRequest.findById(emergencyRequest._id)
+    .populate("patientProfile", "-__v");
+
+  res.status(200).json(
+    new ApiResponse(200, "Hospital finalized successfully", populatedRequest)
+  );
 });
 
 const getHospitalResponsesForPatient = asyncHandler(async (req, res) => {
