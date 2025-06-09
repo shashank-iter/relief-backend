@@ -131,13 +131,10 @@ const patientFinalizeEmergencyRequest = asyncHandler(async (req, res) => {
     );
 });
 
-const getHospitalResponsesForPatient = asyncHandler(async (req, res) => {
-  const patientId = req.user.id;
+const getHospitalResponsesForRequest = asyncHandler(async (req, res) => {
+  const { id } = req.params;
 
-  const emergencyRequest = await EmergencyRequest.findOne({
-    createdBy: patientId,
-    status: { $in: ["pending", "accepted", "finalized"] },
-  })
+  const emergencyRequest = await EmergencyRequest.findById(id)
     .populate({
       path: "acceptedBy",
       select: "-__v",
@@ -158,7 +155,7 @@ const getHospitalResponsesForPatient = asyncHandler(async (req, res) => {
     });
 
   if (!emergencyRequest) {
-    throw new ApiError(404, "No active emergency request found for patient");
+    throw new ApiError(404, "Emergency request not found");
   }
 
   return res.status(200).json(
@@ -167,6 +164,7 @@ const getHospitalResponsesForPatient = asyncHandler(async (req, res) => {
     })
   );
 });
+
 
 const getEmergencyRequestsByStatusForPatient = asyncHandler(
   async (req, res) => {
