@@ -131,7 +131,7 @@ const patientFinalizeEmergencyRequest = asyncHandler(async (req, res) => {
     );
 });
 
-const getHospitalResponsesForRequest = asyncHandler(async (req, res) => {
+const getHospitalResponsesForPatient = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const emergencyRequest = await EmergencyRequest.findById(id)
