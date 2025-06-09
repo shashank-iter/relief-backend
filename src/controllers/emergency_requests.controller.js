@@ -6,7 +6,6 @@ import asyncHandler from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import mongoose from "mongoose";
 
-
 // Emergency Controllers for Patients
 const createEmergencyRequest = asyncHandler(async (req, res) => {
   const userId = req.user.id;
@@ -19,8 +18,16 @@ const createEmergencyRequest = asyncHandler(async (req, res) => {
   } = req.body;
 
   // Fixed validation logic
-  if (!patientName || !patientPhoneNumber || !location?.coordinates || location.coordinates.length !== 2) {
-    throw new ApiError(400, "Patient name, phone number, and location coordinates are required.");
+  if (
+    !patientName ||
+    !patientPhoneNumber ||
+    !location?.coordinates ||
+    location.coordinates.length !== 2
+  ) {
+    throw new ApiError(
+      400,
+      "Patient name, phone number, and location coordinates are required."
+    );
   }
 
   // Check if user already has a pending or active request
@@ -67,7 +74,7 @@ const createEmergencyRequest = asyncHandler(async (req, res) => {
     // Note: acceptedBy array will be empty initially
   });
 
-  // If you need to track which hospitals were notified, 
+  // If you need to track which hospitals were notified,
   // consider adding a 'notifiedHospitals' field to your schema
   // or handle notifications separately
 
@@ -109,11 +116,11 @@ const patientFinalizeEmergencyRequest = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Selected hospital has not accepted the request");
   }
 
- const hospital = await HospitalProfile.findById(hospitalId);
-if (!hospital) {
-    throw new Error('Hospital not found');
-}
-emergencyRequest.finalizedHospital = hospital;
+  const hospital = await HospitalProfile.findById(hospitalId);
+  if (!hospital) {
+    throw new Error("Hospital not found");
+  }
+  emergencyRequest.finalizedHospital = hospital;
   emergencyRequest.status = "finalized";
   await emergencyRequest.save();
 
@@ -137,8 +144,8 @@ const getHospitalResponsesForPatient = asyncHandler(async (req, res) => {
     populate: [
       { path: "bedData", select: "-__v" },
       { path: "bloodData", select: "-__v" },
-      { path: "address", select: "-__v" }
-    ]
+      { path: "address", select: "-__v" },
+    ],
   });
 
   if (!emergencyRequest) {
@@ -152,31 +159,38 @@ const getHospitalResponsesForPatient = asyncHandler(async (req, res) => {
   );
 });
 
+const getEmergencyRequestsByStatusForPatient = asyncHandler(
+  async (req, res) => {
+    const userId = req.user.id;
+    const { status } = req.body;
 
+    const validStatuses = [
+      "pending",
+      "accepted",
+      "finalized",
+      "resolved",
+      "cancelled",
+    ];
+    if (!status || !validStatuses.includes(status)) {
+      throw new ApiError(400, "Invalid or missing status");
+    }
 
-const getEmergencyRequestsByStatusForPatient = asyncHandler(async (req, res) => {
-  const userId = req.user.id;
-  const { status } = req.body;
+    const requests = await EmergencyRequest.find({
+      createdBy: userId,
+      status,
+    }).sort({ updatedAt: -1 });
 
-  const validStatuses = ["pending", "accepted", "finalized", "resolved", "cancelled"];
-  if (!status || !validStatuses.includes(status)) {
-    throw new ApiError(400, "Invalid or missing status");
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          `Emergency requests with status '${status}' fetched successfully`,
+          requests
+        )
+      );
   }
-
-  const requests = await EmergencyRequest.find({
-    createdBy: userId,
-    status,
-  }).sort({ updatedAt: -1 });
-
-  res.status(200).json(
-    new ApiResponse(
-      200,
-      `Emergency requests with status '${status}' fetched successfully`,
-      requests
-    )
-  );
-});
-
+);
 
 // Emergency Controllers for Hospitals
 
@@ -199,12 +213,18 @@ const hospitalAcceptEmergencyRequest = asyncHandler(async (req, res) => {
 
   // Request must be in 'pending' or 'accepted' status (not finalized/resolved/cancelled)
   if (!["pending", "accepted"].includes(emergencyRequest.status)) {
-    throw new ApiError(400, "This emergency request is no longer available for acceptance");
+    throw new ApiError(
+      400,
+      "This emergency request is no longer available for acceptance"
+    );
   }
 
   // Check if already finalized by another hospital
   if (emergencyRequest.finalizedHospital) {
-    throw new ApiError(400, "This emergency request has already been finalized");
+    throw new ApiError(
+      400,
+      "This emergency request has already been finalized"
+    );
   }
 
   // Check if already accepted by this hospital
@@ -228,13 +248,16 @@ const hospitalAcceptEmergencyRequest = asyncHandler(async (req, res) => {
     });
 
     if (!nearbyRequest) {
-      throw new ApiError(403, "You are too far from this emergency request to accept it");
+      throw new ApiError(
+        403,
+        "You are too far from this emergency request to accept it"
+      );
     }
   }
 
   // Accept request
   emergencyRequest.acceptedBy.push(hospitalProfile._id);
-  
+
   // Update status to 'accepted' only if it was 'pending'
   if (emergencyRequest.status === "pending") {
     emergencyRequest.status = "accepted";
@@ -244,9 +267,9 @@ const hospitalAcceptEmergencyRequest = asyncHandler(async (req, res) => {
 
   // Populate the result for better response
   const populatedRequest = await EmergencyRequest.findById(requestId)
-    .populate('createdBy', 'name email')
-    .populate('acceptedBy', 'hospitalName contactNumber')
-    .populate('finalizedHospital', 'hospitalName contactNumber');
+    .populate("createdBy", "name email")
+    .populate("acceptedBy", "hospitalName contactNumber")
+    .populate("finalizedHospital", "hospitalName contactNumber");
 
   res
     .status(200)
@@ -264,11 +287,15 @@ const getNearbyEmergencyRequestsForHospital = asyncHandler(async (req, res) => {
 
   const hospital = await HospitalProfile.findOne({ owner: userId });
 
-  if (!hospital || !hospital.location || !hospital.location.coordinates?.length) {
+  if (
+    !hospital ||
+    !hospital.location ||
+    !hospital.location.coordinates?.length
+  ) {
     throw new ApiError(404, "Hospital profile or location not found");
   }
 
-    const emergencyRequests = await EmergencyRequest.find({
+  const emergencyRequests = await EmergencyRequest.find({
     location: {
       $near: {
         $geometry: {
@@ -282,8 +309,8 @@ const getNearbyEmergencyRequestsForHospital = asyncHandler(async (req, res) => {
     acceptedBy: { $nin: [hospital._id] },
     // finalizedHospital: { $exists: false },
   })
-  .populate('createdBy', 'name email')
-  .sort({ createdAt: -1 });
+    .populate("createdBy", "name email")
+    .sort({ createdAt: -1 });
 
   res
     .status(200)
@@ -296,37 +323,47 @@ const getNearbyEmergencyRequestsForHospital = asyncHandler(async (req, res) => {
     );
 });
 
-const getEmergencyRequestsByStatusForHospital = asyncHandler(async (req, res) => {
-  const userId = req.user.id;
-  const { status } = req.body;
+const getEmergencyRequestsByStatusForHospital = asyncHandler(
+  async (req, res) => {
+    const userId = req.user.id;
+    const { status } = req.body;
 
-  const validStatuses = ["pending", "accepted", "finalized", "resolved", "cancelled"];
-  if (!status || !validStatuses.includes(status)) {
-    throw new ApiError(400, "Invalid or missing status");
+    const validStatuses = [
+      "pending",
+      "accepted",
+      "finalized",
+      "resolved",
+      "cancelled",
+    ];
+    if (!status || !validStatuses.includes(status)) {
+      throw new ApiError(400, "Invalid or missing status");
+    }
+
+    const hospital = await HospitalProfile.findOne({ owner: userId });
+    if (!hospital) {
+      throw new ApiError(404, "Hospital profile not found");
+    }
+
+    const requests = await EmergencyRequest.find({
+      status,
+      acceptedBy: hospital._id,
+    }).sort({ updatedAt: -1 });
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          `Emergency requests with status '${status}' fetched successfully`,
+          requests
+        )
+      );
   }
-
-  const hospital = await HospitalProfile.findOne({ owner: userId });
-  if (!hospital) {
-    throw new ApiError(404, "Hospital profile not found");
-  }
-
-  const requests = await EmergencyRequest.find({
-    status,
-    acceptedBy: hospital._id,
-  }).sort({ updatedAt: -1 });
-
-  res.status(200).json(
-    new ApiResponse(
-      200,
-      `Emergency requests with status '${status}' fetched successfully`,
-      requests
-    )
-  );
-});
+);
 
 const uploadEmergencyRequestPhoto = asyncHandler(async (req, res) => {
   const { emergencyRequestId } = req.body;
-  console.log(req)
+  console.log(req);
 
   if (!req.file || !emergencyRequestId) {
     throw new ApiError(400, "Image file and requestId are required");
@@ -350,9 +387,45 @@ const uploadEmergencyRequestPhoto = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "Photo uploaded successfully", request));
 });
 
+const cancelEmergencyRequest = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user._id;
 
+  const emergencyRequest = await EmergencyRequest.findOne({
+    _id: id,
+    createdBy: userId,
+  });
 
+  if (!emergencyRequest) {
+    throw new ApiError(404, "Emergency request not found");
+  }
 
+  if (emergencyRequest.status === "cancelled") {
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(200, "Request already cancelled", emergencyRequest)
+      );
+  }
+  if (emergencyRequest.status === "resolved") {
+    return res
+      .status(200)
+      .json(new ApiResponse(200, "Request already resolved", emergencyRequest));
+  }
+
+  emergencyRequest.status = "cancelled";
+  await emergencyRequest.save();
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        "Emergency request cancelled successfully",
+        emergencyRequest
+      )
+    );
+});
 
 // how we are going to handle when a user creates multiple emergency requests
 // may not allow user to create multiple emergency requests as in not more than 2 at one time.
@@ -363,7 +436,7 @@ const uploadEmergencyRequestPhoto = asyncHandler(async (req, res) => {
 // User creates request and hospital accept it and then user confirms and then user cancels, give him privilage to cancel it. -- cancelled
 
 // We should have ambulance role, for so that he is only able to see the requests that are that are finalized.
-// Can be extended to ambulance model and assignment. 
+// Can be extended to ambulance model and assignment.
 
 // create a block user API
 
@@ -376,4 +449,5 @@ export {
   getEmergencyRequestsByStatusForHospital,
   getEmergencyRequestsByStatusForPatient,
   uploadEmergencyRequestPhoto,
+  cancelEmergencyRequest,
 };
