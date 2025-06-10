@@ -28,6 +28,7 @@ app.use(
       "http://localhost:3000",
       "https://relief-patient.vercel.app",
       "https://relief-hospital-platform.vercel.app",
+      "https://relief-admin-platform.vercel.app"
     ],
     credentials: true,
   })
