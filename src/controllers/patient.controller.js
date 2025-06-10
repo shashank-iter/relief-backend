@@ -107,6 +107,7 @@ const getPatientProfile = asyncHandler(async (req, res) => {
  */
 const updateEmergencyContact = asyncHandler(async (req, res) => {
   const { contactId, name, phoneNumber, email, relationship } = req.body;
+  console.log(contactId);
   const userId = req.user._id;
 
   // Find the patient profile
@@ -126,8 +127,9 @@ const updateEmergencyContact = asyncHandler(async (req, res) => {
       throw new ApiError(404, "Emergency contact not found");
     }
 
+    console.log(emergencyContact.owner, userId);
     // Verify this contact belongs to the user
-    if (emergencyContact.owner.toString() !== userId.toString()) {
+    if (emergencyContact.owner.toString() !== patientProfile?._id?.toString()) {
       throw new ApiError(
         403,
         "You don't have permission to update this contact"
