@@ -26,6 +26,10 @@ const userSchema = new Schema(
       enum: ["active", "blocked"], // to be used to block user in case of any false inputs.
       default: "active",
     },
+    patientProfile: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PatientProfile",
+    },
   },
   {
     timestamps: true,
