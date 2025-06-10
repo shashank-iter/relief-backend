@@ -363,10 +363,131 @@ const loginHospitalUser = asyncHandler(async (req, res) => {
     );
 });
 
+//admin controllers
+
+const registerAdmin = asyncHandler(async (req, res) => {
+  const { phoneNumber, password, role } = req.body;
+  console.log(phoneNumber, password, role);
+  if (role !== "admin") {
+    throw new ApiError(400, "Only admins can login here.");
+  }
+  if ([password, phoneNumber, role].some((field) => !field?.trim())) {
+    throw new ApiError(400, "Please provide all required fields");
+  }
+  const existingUser = await User.findOne({ phoneNumber });
+
+  if (existingUser) {
+    throw new ApiError(400, "User with this phone number already exists");
+  }
+  try {
+    // Create user
+    const newUser = await User.create({
+      phoneNumber,
+      password,
+      role,
+    });
+
+    const { accessToken, refreshToken } = await generateAccessAndRefeshToken(
+      newUser._id
+    );
+
+    const createdUser = await User.findById(newUser._id).select(
+      "-password -refreshToken"
+    );
+
+    if (!createdUser) {
+      throw new ApiError(500, "Something went wrong while creating user");
+    }
+    console.log("Admin user registered successfully", createdUser);
+
+    return res
+      .status(201)
+      .cookie("accessToken", accessToken, accessTokenOptions)
+      .cookie("refreshToken", refreshToken, refreshTokenOptions)
+      .json(
+        new ApiResponse(201, "Admin registered successfully", {
+          user: createdUser,
+          accessToken,
+          refreshToken,
+        })
+      );
+  } catch (err) {
+    console.log("Admin registration error:", err);
+    throw new ApiError(500, "Something went wrong while registering Admin");
+  }
+});
+
+const loginAdmin = asyncHandler(async (req, res) => {
+  const { phoneNumber, role, password } = req.body;
+
+  if (!phoneNumber) {
+    throw new ApiError(400, "Please provide Phone number or password.");
+  }
+
+  if (!role || role !== "admin") {
+    throw new ApiError(400, "Invalid role, Access Denied.");
+  }
+
+  // find the user
+  const user = await User.findOne({ phoneNumber });
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  // check user role
+  if (user.role !== "admin") {
+    throw new ApiError(403, "Access denied for this user role");
+  }
+
+  // check the password
+  const isPasswordValid = await user.verifyPassword(password);
+
+  if (!isPasswordValid) {
+    throw new ApiError(401, "Invalid credentials");
+  }
+
+  // send access and refresh token in cookies
+  const { accessToken, refreshToken } = await generateAccessAndRefeshToken(
+    user._id
+  );
+
+  const loggedInUser = await User.findById(user._id).select(
+    "-refreshToken -password"
+  );
+
+  const accessTokenOptions = {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
+  };
+
+  const refreshTokenOptions = {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+    maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+  };
+
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, accessTokenOptions)
+    .cookie("refreshToken", refreshToken, refreshTokenOptions)
+    .json(
+      new ApiResponse(200, "Hospital user logged in successfully", {
+        user: loggedInUser,
+        accessToken,
+        refreshToken,
+      })
+    );
+});
 export {
   registerUser,
   loginUser,
   getUserData,
   registerHospitalUser,
   loginHospitalUser,
+  loginAdmin,
+  registerAdmin,
 };
