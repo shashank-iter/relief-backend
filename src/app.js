@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 
 const app = express();
+import errorHandler from "./middlewares/errorhandler.js";
 
 // configuration for data coming through the json format
 app.use(
@@ -46,5 +47,7 @@ app.use("/api/v1/users/patient", patientsRouter);
 app.use("/api/v1/users/hospital", hospitalRouter);
 app.use("/api/v1/emergency", emerygencyRouter);
 app.use("/api/v1/admin", adminRouter);
+
+app.use(errorHandler);
 
 export default app;
