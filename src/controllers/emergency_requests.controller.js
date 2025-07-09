@@ -127,7 +127,11 @@ const patientFinalizeEmergencyRequest = asyncHandler(async (req, res) => {
   }
 
   emergencyRequest.finalizedHospital = hospital._id;
-  emergencyRequest.patientProfile = patientProfile._id;
+  if (emergencyRequest.forSelf) {
+    emergencyRequest.patientProfile = patientProfile._id;
+  } else {
+    emergencyRequest.patientProfile = null;
+  }
   emergencyRequest.status = "finalized";
   await emergencyRequest.save();
 
